@@ -22,37 +22,72 @@ import rv.rvui
 import rv.runtime
 import rv as rv
 
+try:
+    import ftrack
+    ftrack.setup(actions=False)
+    logger.info('ftrack Python API loaded.')
+except ImportError:
+    logger.exception(
+        'Could not load ftrack Python API. Please check it is '
+        'available on the PYTHONPATH.'
+    )
+
 # Cache to keep track of filesystem path for components.
 # This will cause the component to use the same filesystem path
 # during the entire session.
 componentFilesystemPaths = {}
-api = None
 
 sequenceSourceNode = None
 stackSourceNode = None
 layoutSourceNode = None
 
-
-def getAPI():
-    '''Return the ftrack api
-
-    Util method to try to load the ftrack api
-
+def send_ftrack_event(payload):
+    '''Send *payload* as internal event.
+    
+    *payload* should be JSON serializable.  
+    
     '''
-    global api
-    if not api:
-        try:
-            import ftrack as api
-            api.setup(actions=False)
-            logger.info('ftrack Python API loaded.')
-        except ImportError:
-            logger.exception(
-                'Could not load ftrack Python API. Please check it is '
-                'available on the PYTHONPATH.'
-            )
-            api = None
+    rv.commands.sendInternalEvent(
+        'ftrack-event',
+        base64.b64encode(json.dumps(payload)),
+        None
+    )
 
-    return api
+def on_upload_annotations(event):
+    '''Handle upload annotations event.'''
+    logger.info('Start to upload annotated frames.')
+    
+    folder_path = event.contents()
+    logger.info(
+        'Looking for exported frames in folder: "{0}"'.format(folder_path)
+    )
+    
+    server_location = ftrack.LOCATION_PLUGINS.get('ftrack.server')
+       
+    new_component_ids = []
+    for item in os.listdir(folder_path):
+        logger.info(
+            'Creating component and moving "{0}" to ftrack.server location.'.format(item)
+        )
+        component = ftrack.createComponent(
+            'Annotated frame', os.path.join(folder_path, item), location=server_location
+        )
+        send_ftrack_event({
+            'type': 'uploadStarted', 'attachment': component.getId()
+        })
+        new_component_ids.append(component.getId())
+    
+    for component_id in new_component_ids:
+        logger.info('Sending "uploadEnded" event.')
+        send_ftrack_event({
+            'type': 'uploadEnded', 'id': component_id
+        })
+
+
+rv.commands.bind(
+    'default', 'global', 'ftrack-upload-exported-frames',
+    on_upload_annotations, 'Trigger uploading of all annotated frames.'
+)
 
 
 def _getSourceNode(nodeType='sequence'):
@@ -116,10 +151,8 @@ def _getFilePath(componentId):
     '''
     global componentFilesystemPaths
 
-    api = getAPI()
-
     if componentId not in componentFilesystemPaths:
-        location = api.pickLocation(componentId)
+        location = ftrack.pickLocation(componentId)
 
         if not location:
             raise IOError()
@@ -338,7 +371,7 @@ def _generateURL(params=None, panelName=None):
             entityId, entityType = _getEntityFromEnvironment()
 
         try:
-            url = getAPI().getWebWidgetUrl(
+            url = ftrack.getWebWidgetUrl(
                 panelName, 'tf', entityId=entityId, entityType=entityType
             )
         except Exception as exception:
@@ -355,7 +388,7 @@ def ftrackFilePath(id):
             filename = "%s.jpg" % id
             filepath = os.path.join(tempfile.gettempdir(), filename)
         else:
-            filepath = tempfile.gettempdir()
+            filepath = tempfile.mkdtemp(prefix=str(uuid()))
         return filepath
     except:
         print traceback.format_exc()
@@ -366,11 +399,6 @@ def ftrackUUID(short):
     '''Retun a uuid based on uuid1
     '''
     return str(uuid())
-
-
-def ftrackGetAttachmentId(s):
-    obj = json.loads(s)
-    return str(obj.get('attachment',{}).get('attachmentid',''))
 
 
 def ftrackJumpTo(index=0, startFrame=1):
