@@ -20,6 +20,23 @@ import rv.runtime
 import rv as rv
 
 
+# Since RV's Python interpreter was compiled without IPv6 support,
+# websocket-client will try to use AF_INET6 under some circumstances,
+# and fail with getsockaddrarg: bad family
+import socket
+import websocket
+old_func = websocket._http._get_addrinfo_list
+def new_func(*args, **kwargs):
+    addrinfo_list, need_tunnel, auth = old_func(*args, **kwargs)
+    addrinfo_list = [
+        addrinfo
+        for addrinfo in addrinfo_list
+        if addrinfo[0] == socket.AF_INET
+    ]
+    return addrinfo_list, need_tunnel, auth
+websocket._http._get_addrinfo_list = new_func
+
+
 ftrack_connect_rv_logger_name = 'ftrack_connect_rv'
 
 
