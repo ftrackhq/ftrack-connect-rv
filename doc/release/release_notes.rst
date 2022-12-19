@@ -7,6 +7,17 @@
 Release Notes
 *************
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: Logging
+
+        Log initialization breaks due to utf8 conversion.
+
+    .. change:: fixed
+        :tags: Api
+
+        Rv breaks not being able to parse tempdata.
 
 .. release:: 5.0
     :date: 2021-09-07

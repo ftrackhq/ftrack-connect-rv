@@ -403,7 +403,8 @@ def _generateURL(params=None, panelName=None):
                     new_entity = session.get(new_entity_type, entityId)
                 else: 
                     temp_data = _get_temp_data(entityId)[0][0]
-                    new_entity_type = _translateEntityType(temp_data)
+                    new_entity_type = _translateEntityType(temp_data['type'])
+                    new_entity = session.get(new_entity_type, entityId)
             else:
                 new_entity = None
             try:
