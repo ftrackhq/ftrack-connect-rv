@@ -404,7 +404,7 @@ def _generateURL(params=None, panelName=None):
                 else: 
                     temp_data = _get_temp_data(entityId)[0][0]
                     new_entity_type = _translateEntityType(temp_data['type'])
-                    new_entity = session.get(new_entity_type, entityId)
+                    new_entity = session.get(new_entity_type, temp_data['id'])
             else:
                 new_entity = None
             try:
