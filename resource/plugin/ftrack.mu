@@ -270,6 +270,9 @@ class: FtrackMode : MinorMode
             _webActionWidget = _baseActionWidget.findChild("webView");
             connect(_webNavigationWidget, QWebEngineView.loadFinished, viewLoaded(_baseActionWidget,));
 
+
+            pprint("Cache path:" + _webActionWidget.page().profile().persistentStoragePath());
+
             _webActionWidget.load(QUrl(url));
 
             javascriptMuExport(_webActionWidget.page());
