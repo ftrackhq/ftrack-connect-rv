@@ -205,7 +205,8 @@ class: FtrackMode : MinorMode
         event.reject();
         if (_webNavigationWidget neq nil) _webNavigationWidget.page().setHtml("", qt.QUrl());
         if (_webActionWidget neq nil) _webActionWidget.page().setHtml("", qt.QUrl());
-        
+        if (_webNavigationWidget neq nil) _webNavigationWidget.page().profile().clearHttpCache();
+        if (_webActionWidget neq nil) _webActionWidget.page().profile().clearHttpCache();
     }
     
     method: FtrackMode (FtrackMode; string name)
