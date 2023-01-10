@@ -111,7 +111,18 @@ class: FtrackMode : MinorMode
         verticalLayout.setContentsMargins(4, 4, 4, 4);
         verticalLayout.setObjectName("verticalLayout");
 
+
         let webView = QWebEngineView(Form);
+
+        //let profile = QWebEngineProfile(Form);
+        //let page = QWebEnginePage(profile);
+        //webView.setPage(page);
+
+        //webView.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
+        //webView.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+        //let tempdir = QDir.tempPath();
+        //webView.page().profile().setCachePath(tempdir);
+
         webView.setObjectName("webView");
         verticalLayout.addWidget(webView);
         return Form;
@@ -205,8 +216,9 @@ class: FtrackMode : MinorMode
         event.reject();
         if (_webNavigationWidget neq nil) _webNavigationWidget.page().setHtml("", qt.QUrl());
         if (_webActionWidget neq nil) _webActionWidget.page().setHtml("", qt.QUrl());
-        if (_webNavigationWidget neq nil) _webNavigationWidget.page().profile().clearHttpCache();
-        if (_webActionWidget neq nil) _webActionWidget.page().profile().clearHttpCache();
+        //if (_webNavigationWidget neq nil) _webNavigationWidget.page().profile().cookieStore().deleteAllCookies();
+        //if (_webActionWidget neq nil) _webActionWidget.page().profile().cookieStore().deleteAllCookies();
+        
     }
     
     method: FtrackMode (FtrackMode; string name)
@@ -266,7 +278,9 @@ class: FtrackMode : MinorMode
             _dockActionWidget = QDockWidget(title, mainWindowWidget(), Qt.Widget);
             
             _baseActionWidget = makeit();
-            
+            _baseActionWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
+            _baseActionWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+
             _webActionWidget = _baseActionWidget.findChild("webView");
             connect(_webNavigationWidget, QWebEngineView.loadFinished, viewLoaded(_baseActionWidget,));
 
@@ -349,7 +363,9 @@ class: FtrackMode : MinorMode
         _dockNavigationWidget = QDockWidget(title, mainWindowWidget(), Qt.Widget);
         
         _baseNavigationWidget = makeit();
-        
+        _baseNavigationWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
+        _baseNavigationWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+
         _webNavigationWidget     = _baseNavigationWidget.findChild("webView");
         connect(_webNavigationWidget, QWebEngineView.loadFinished, viewLoaded(_baseNavigationWidget,));
 
