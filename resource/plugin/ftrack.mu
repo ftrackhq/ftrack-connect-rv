@@ -216,8 +216,8 @@ class: FtrackMode : MinorMode
         event.reject();
         if (_webNavigationWidget neq nil) _webNavigationWidget.page().setHtml("", qt.QUrl());
         if (_webActionWidget neq nil) _webActionWidget.page().setHtml("", qt.QUrl());
-        //if (_webNavigationWidget neq nil) _webNavigationWidget.page().profile().cookieStore().deleteAllCookies();
-        //if (_webActionWidget neq nil) _webActionWidget.page().profile().cookieStore().deleteAllCookies();
+        if (_webNavigationWidget neq nil) _webNavigationWidget.page().profile().cookieStore().deleteAllCookies();
+        if (_webActionWidget neq nil) _webActionWidget.page().profile().cookieStore().deleteAllCookies();
         
     }
     
@@ -278,14 +278,17 @@ class: FtrackMode : MinorMode
             _dockActionWidget = QDockWidget(title, mainWindowWidget(), Qt.Widget);
             
             _baseActionWidget = makeit();
-            _baseActionWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
-            _baseActionWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+
 
             _webActionWidget = _baseActionWidget.findChild("webView");
             connect(_webNavigationWidget, QWebEngineView.loadFinished, viewLoaded(_baseActionWidget,));
 
-
-            pprint("Cache path:" + _webActionWidget.page().profile().persistentStoragePath());
+            _webActionWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
+            _webActionWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+            
+            //let tempdir = QDir.tempPath();
+            //_webActionWidget.page().profile().setCachePath(tempdir);
+            //pprint("Cache path:" + _webActionWidget.page().profile().persistentStoragePath());
 
             _webActionWidget.load(QUrl(url));
 
@@ -363,10 +366,16 @@ class: FtrackMode : MinorMode
         _dockNavigationWidget = QDockWidget(title, mainWindowWidget(), Qt.Widget);
         
         _baseNavigationWidget = makeit();
-        _baseNavigationWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
-        _baseNavigationWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
 
         _webNavigationWidget     = _baseNavigationWidget.findChild("webView");
+        _webNavigationWidget.page().profile().setHttpCacheType(QWebEngineProfile.MemoryHttpCache);
+        _webNavigationWidget.page().profile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies);
+
+
+        //let tempdir = QDir.tempPath();
+        //pprint("Q temp dir: " + tempdir);
+        //_webNavigationWidget.page().profile().setCachePath(tempdir);
+        
         connect(_webNavigationWidget, QWebEngineView.loadFinished, viewLoaded(_baseNavigationWidget,));
 
         _webNavigationWidget.load(QUrl(url));
