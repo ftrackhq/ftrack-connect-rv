@@ -409,7 +409,7 @@ def _generateURL(params=None, panelName=None):
                     new_entity = session.get(new_entity_type, entityId)
                     try:
                         logger.info('URL Generated for: {}'.format(new_entity))
-                        url = session._get_widget_url(panelName, entity=new_entity)
+                        url = session.get_widget_url(panelName, entity=new_entity)
                     except Exception as exception:
                         logger.error(str(exception))
 
